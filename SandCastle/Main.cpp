@@ -9,6 +9,8 @@ enum class State
 	Ranking,
 };
 
+
+
 // 共有するデータ
 struct GameData
 {
@@ -121,16 +123,14 @@ public:
 		getData().sandmap.resize(m_height, m_width, 0);
 
 		//スコップの設定
-		scoops << Scoop{ U"ミニスコップa", Palette::White, U"1マスだけ掘れるよ", 1.0 };
-		scoops << Scoop{ U"ノーマルスコップ", Palette::Black, U"4マス掘れるよ", 1.5 };
-		scoops << Scoop{ U"大きめスコップ", Palette::Brown, U"9マス掘れるよ", 2.0 };
-		scoops << Scoop{ U"めちゃでかすこっぷ", Palette::Pink, U"25マス掘れるよ", 1.2 };
+		scoops << Scoop{ Scoopname::Mini, Palette::White, U"1マスだけ掘れるよ", 1.0 };
+		scoops << Scoop{ Scoopname::Standard, Palette::Black, U"4マス掘れるよ", 1.5 };
+		scoops << Scoop{ Scoopname::Miduim, Palette::Brown, U"9マス掘れるよ", 2.0 };
+		scoops << Scoop{ Scoopname::Big, Palette::Pink, U"25マス掘れるよ", 1.2 };
 
 
 		//初期スコップの選択
-		l_scoop = scoops[0]; //ミニ
-		c_scoop = scoops[1]; //ノーマル
-		r_scoop = scoops[2]; //ミディアム
+		
 
 	}
 
@@ -184,9 +184,6 @@ public:
 		l_scoop_rect.draw(Palette::Whitesmoke);
 		c_scoop_rect.draw(Palette::Whitesmoke);
 		r_scoop_rect.draw(Palette::Whitesmoke);
-		
-
-
 
 
 	}
@@ -210,8 +207,20 @@ private:
 	int32 countscoop;     // 掘られた回数
 	bool s_empty;  // 砂が尽きたかどうか
 
+	enum class Scoopname
+	{
+		Mini,
+		Standard,
+		Miduim,
+		Big,
+		Cross,
+		Triangle,
+	};
+
+
+
 	struct Scoop {
-		String scoop_name;       // 砂の名前
+		Scoopname scoop_name;       // 砂の名前
 		ColorF scoop_color;       // 砂の色
 		String scoop_description;// 砂の説明文
 		double scoop_hardness;   // 砂の硬さ（掘るのに必要な労力などに影響するかも）
@@ -224,6 +233,8 @@ private:
 	//アイテム欄(inventory)
 	const RectF inv_rect{ 75, 600, 600, 100 };
 	const ColorF inv_color{ 0.8,0.8,0.8 };
+
+
 
 	//アイテム欄のスコップ3種類
 	Scoop l_scoop, c_scoop, r_scoop;
