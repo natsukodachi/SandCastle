@@ -129,8 +129,10 @@ public:
 		scoops << Scoop{ Scoopname::Big, Palette::Pink, U"25マス掘れるよ", 1.2 };
 
 
-		//初期スコップの選択
-		
+		//初期スコップの選択&アイテム欄に追加
+		l_scoop = scoops[0]; items << Item{ l_scoop, l_scoop_rect };
+		c_scoop = scoops[1]; items << Item{ c_scoop, c_scoop_rect };
+		r_scoop = scoops[2]; items << Item{ r_scoop, r_scoop_rect };
 
 	}
 
@@ -148,6 +150,16 @@ public:
 		}
 
 		//スコップ選択
+		for (auto& x : items) {
+			if (x.rect.leftClicked())
+			{
+				nowitem = x.scoop;
+				isChoiseitem = true;
+				//Print << nowitem.scoop_description;
+			}
+		};
+
+
 		if (SimpleGUI::Button(U"Reset", Vec2{ 200, 20 }))
 		{
 			ClearPrint();
@@ -156,6 +168,9 @@ public:
 			Print << scoops.choice().scoop_description;
 		}
 
+
+		//掘る場所が決まったら
+		//if()
 
 	}
 
@@ -180,11 +195,32 @@ public:
 		inv_rect.rounded(10).draw(inv_color);
 		inv_rect.rounded(10).drawFrame(3, 3, ColorF{ 0.5 });
 
-		//スコップ背景 ここ後でautoでループする
-		l_scoop_rect.draw(Palette::Whitesmoke);
-		c_scoop_rect.draw(Palette::Whitesmoke);
-		r_scoop_rect.draw(Palette::Whitesmoke);
+		//スコップ背景
+		for (auto& x : items) {
+			x.rect.draw(Palette::Whitesmoke);
+		};
 
+
+
+
+		//アイテム説明
+		//選択アイテムの説明をする
+		if (isChoiseitem)
+		{
+				FontAsset(U"Menu")(nowitem.scoop_description).drawAt(30, Vec2{ 1000, 600 });
+				//Print << nowitem.scoop_description;
+				
+		};
+
+		//マウスカーソルが重なったアイテムの説明もする（動かない）
+		for(auto& x: items)
+		{
+			if ((isChoiseitem==false) && x.rect.mouseOver())
+			{
+				FontAsset(U"Menu")(x.scoop.scoop_description).drawAt(30, Vec2{ 1000, 600 });
+				//Print << nowitem.scoop_description;
+			};
+		};
 
 	}
 
@@ -196,6 +232,8 @@ private:
 	constexpr static int32 m_size = 50;
 
 	constexpr static Point Offset{ 80, 70 };
+
+	//constexpr static Rect sandmap={Offset,Offset+m_height*m_size,}
 
 
 
@@ -226,7 +264,6 @@ private:
 		double scoop_hardness;   // 砂の硬さ（掘るのに必要な労力などに影響するかも）
 	};
 
-	Array<int32> scoop_index;
 	int32 scoop_size = 4;
 	Array<Scoop> scoops;
 
@@ -234,13 +271,31 @@ private:
 	const RectF inv_rect{ 75, 600, 600, 100 };
 	const ColorF inv_color{ 0.8,0.8,0.8 };
 
+	//今選んでるアイテム
+	Scoop nowitem;
 
+	//アイテムを選んでいるか
+	bool isChoiseitem;
 
 	//アイテム欄のスコップ3種類
+
+	struct Item
+	{
+		Scoop scoop;
+		RectF rect;
+	};
+
+	//アイテムの配列
+	Array<Item> items;
+
 	Scoop l_scoop, c_scoop, r_scoop;
-	const RectF l_scoop_rect{ Arg::center(150,650),30 };
-	const RectF c_scoop_rect{ Arg::center(300,650),30 };
-	const RectF r_scoop_rect{ Arg::center(450,650),30 };
+	const RectF l_scoop_rect{ Arg::center(150,650),90 };
+	const RectF c_scoop_rect{ Arg::center(300,650),90 };
+	const RectF r_scoop_rect{ Arg::center(450,650),90 };
+
+	//アイテム説明欄
+	const RectF discription{ Arg::center(800,600),100 };
+
 
 };
 
