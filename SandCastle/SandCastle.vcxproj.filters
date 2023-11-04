@@ -751,6 +751,17 @@
     <Font Include="App\example\font\RocknRoll\RocknRollOne-Regular.ttf">
       <Filter>Resource Files\example\font\RocknRoll</Filter>
     </Font>
+    <Font Include="App\NewAssets\font\JF-Dot-MPlus10.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlus10B.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlus12.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlus12B.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlusH10.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlusH10B.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlusH12.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlusH12B.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlusQ10.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlusS10.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlusS10B.ttf" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="App\example\objdetect\haarcascade\face_anime.xml">

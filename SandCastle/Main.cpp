@@ -18,7 +18,7 @@ struct GameData
 	Optional<int32> lastGameScore;
 
 	// ハイスコア
-	Array<int32> highScores = { 50, 40, 30, 20, 10 };
+	Array<int32> highScores = { 0, 0, 0, 0, 0 };
 
 	Grid<int32> sandmap;
 };
@@ -123,10 +123,10 @@ public:
 		getData().sandmap.resize(m_height, m_width, 0);
 
 		//スコップの設定
-		scoops << Scoop{ Scoopname::Mini, Palette::White, U"1マスだけ掘れるよ", 1.0 };
-		scoops << Scoop{ Scoopname::Standard, Palette::Black, U"4マス掘れるよ", 1.5 };
-		scoops << Scoop{ Scoopname::Miduim, Palette::Brown, U"9マス掘れるよ", 2.0 };
-		scoops << Scoop{ Scoopname::Big, Palette::Pink, U"25マス掘れるよ", 1.2 };
+		scoops << Scoop{ Scoopname::Mini, Palette::White, U"1マスだけ掘れるよ", 1 };
+		scoops << Scoop{ Scoopname::Standard, Palette::Black, U"4マス掘れるよ", 2 };
+		scoops << Scoop{ Scoopname::Miduim, Palette::Brown, U"9マス掘れるよ", 3 };
+		scoops << Scoop{ Scoopname::Big, Palette::Pink, U"25マス掘れるよ", 4 };
 
 
 		//初期スコップの選択&アイテム欄に追加
@@ -138,6 +138,34 @@ public:
 
 	void update() override
 	{
+
+		//スコップ選択
+		for (auto& x : items) {
+			if (x.rect.leftClicked())
+			{
+
+				if (isChoiseitem)
+				{
+					isChoiseitem = false;
+				}
+
+				else {
+					nowitem = x.scoop;
+					isChoiseitem = true;
+				}
+				//Print << nowitem.scoop_description;
+			}
+		}
+
+		if (SimpleGUI::Button(U"Reset", Vec2{ 200, 20 }))
+		{
+			ClearPrint();
+
+			// ランダムな要素を返す
+			Print << scoops.choice().description;
+		}
+
+
 		//砂を掘るアクション
 		for (int32 y = 0; y < getData().sandmap.height(); y++) {
 			for (int32 x = 0; x < getData().sandmap.width(); x++) {
@@ -148,27 +176,6 @@ public:
 				}
 			}
 		}
-
-		//スコップ選択
-		for (auto& x : items) {
-			if (x.rect.leftClicked())
-			{
-				nowitem = x.scoop;
-				isChoiseitem = true;
-				//Print << nowitem.scoop_description;
-			}
-		};
-
-
-		if (SimpleGUI::Button(U"Reset", Vec2{ 200, 20 }))
-		{
-			ClearPrint();
-
-			// ランダムな要素を返す
-			Print << scoops.choice().scoop_description;
-		}
-
-
 		//掘る場所が決まったら
 		//if()
 
@@ -182,9 +189,10 @@ public:
 			for (int32 x = 0; x < getData().sandmap.width(); x++) {
 				const RectF rect{ (Point{ (x * m_size), (y * m_size)} + Offset), m_size };
 				const ColorF color{ (3 - getData().sandmap[y][x]) / 3.0 };
-				if (rect.mouseOver())
+				if ((isChoiseitem==true) && rect.mouseOver())
 				{
 					rect.drawFrame(8, 0);
+					RectF{ Clamp<size_t>(rect.x, 80, LastOffset.x) ,Clamp(int32(rect.y), Offset.y, LastOffset.y), ((nowitem.lenth) * (m_size)) }.stretched(-1).draw(color);
 				}
 				rect.stretched(-1).draw(color);
 
@@ -198,42 +206,39 @@ public:
 		//スコップ背景
 		for (auto& x : items) {
 			x.rect.draw(Palette::Whitesmoke);
-		};
-
-
-
+		}
 
 		//アイテム説明
 		//選択アイテムの説明をする
 		if (isChoiseitem)
 		{
-				FontAsset(U"Menu")(nowitem.scoop_description).drawAt(30, Vec2{ 1000, 600 });
+				FontAsset(U"Menu")(nowitem.description).drawAt(30, Vec2{ 1000, 600 });
 				//Print << nowitem.scoop_description;
-				
-		};
+			
+		}
 
 		//マウスカーソルが重なったアイテムの説明もする（動かない）
 		for(auto& x: items)
 		{
 			if ((isChoiseitem==false) && x.rect.mouseOver())
 			{
-				FontAsset(U"Menu")(x.scoop.scoop_description).drawAt(30, Vec2{ 1000, 600 });
+				FontAsset(U"Menu")(x.scoop.description).drawAt(30, Vec2{ 1000, 600 });
 				//Print << nowitem.scoop_description;
-			};
-		};
+			}
+		}
 
 	}
 
 private:
 
-	//mapサイズ
-	constexpr static int32 m_height = 9;
+	//sandmapサイズ
 	constexpr static int32 m_width = 9;
+	constexpr static int32 m_height = 9;
 	constexpr static int32 m_size = 50;
 
 	constexpr static Point Offset{ 80, 70 };
 
-	//constexpr static Rect sandmap={Offset,Offset+m_height*m_size,}
+	constexpr static Rect LastOffset{ 600, 600 };
 
 
 
@@ -241,9 +246,6 @@ private:
 	Color s_color;
 
 	//土の種類
-	int32 s_type;      // 砂の種類
-	int32 countscoop;     // 掘られた回数
-	bool s_empty;  // 砂が尽きたかどうか
 
 	enum class Scoopname
 	{
@@ -258,10 +260,10 @@ private:
 
 
 	struct Scoop {
-		Scoopname scoop_name;       // 砂の名前
-		ColorF scoop_color;       // 砂の色
-		String scoop_description;// 砂の説明文
-		double scoop_hardness;   // 砂の硬さ（掘るのに必要な労力などに影響するかも）
+		Scoopname name;       // 砂の名前
+		ColorF color;       // 砂の色
+		String description;// 砂の説明文
+		int32 lenth;   // 砂の硬さ（掘るのに必要な労力などに影響するかも）
 	};
 
 	int32 scoop_size = 4;
@@ -275,7 +277,7 @@ private:
 	Scoop nowitem;
 
 	//アイテムを選んでいるか
-	bool isChoiseitem;
+	bool isChoiseitem=false;
 
 	//アイテム欄のスコップ3種類
 

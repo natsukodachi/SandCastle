@@ -305,6 +305,17 @@
   <ItemGroup>
     <Font Include="App\example\font\DotGothic16\DotGothic16-Regular.ttf" />
     <Font Include="App\example\font\RocknRoll\RocknRollOne-Regular.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlus10.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlus10B.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlus12.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlus12B.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlusH10.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlusH10B.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlusH12.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlusH12B.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlusQ10.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlusS10.ttf" />
+    <Font Include="App\NewAssets\font\JF-Dot-MPlusS10B.ttf" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="App\example\objdetect\haarcascade\eye.xml" />
