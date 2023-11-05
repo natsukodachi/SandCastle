@@ -83,7 +83,7 @@ public:
 	{
 		Scene::SetBackground(ColorF{ 0.2, 0.8, 0.4 });
 
-		FontAsset(U"TitleFont")(U"BREAKOUT")
+		FontAsset(U"TitleFont")(U"Sand Castle")
 			.drawAt(TextStyle::OutlineShadow(0.2, ColorF{ 0.2, 0.6, 0.2 }, Vec2{ 3, 3 }, ColorF{ 0.0, 0.5 }), 100, Vec2{ 400, 100 });
 
 		m_startButton.draw(ColorF{ 1.0, m_startTransition.value() }).drawFrame(2);
@@ -130,12 +130,13 @@ public:
 
 
 		//初期スコップの選択&アイテム欄に追加
-		l_scoop = scoops[0]; items << Item{ l_scoop, l_scoop_rect };
-		c_scoop = scoops[1]; items << Item{ c_scoop, c_scoop_rect };
-		r_scoop = scoops[2]; items << Item{ r_scoop, r_scoop_rect };
+		l_scoop = scoops[0]; items << Item{ l_scoop, l_scoop_rect,0};
+		c_scoop = scoops[1]; items << Item{ c_scoop, c_scoop_rect,1 };
+		r_scoop = scoops[2]; items << Item{ r_scoop, r_scoop_rect,2 };
 
 	}
 
+	//ここから更新関数
 	void update() override
 	{
 
@@ -151,33 +152,64 @@ public:
 
 				else {
 					nowitem = x.scoop;
+					nowindex = x.index;
 					isChoiseitem = true;
 				}
 				//Print << nowitem.scoop_description;
 			}
 		}
 
-		if (SimpleGUI::Button(U"Reset", Vec2{ 200, 20 }))
-		{
-			ClearPrint();
+		//グリッド操作
+		for (int32 y = 0; y < m_height; y++) {
+			for (int32 x = 0; x < m_width; x++) {
 
-			// ランダムな要素を返す
-			Print << scoops.choice().description;
-		}
-
-
-		//砂を掘るアクション
-		for (int32 y = 0; y < getData().sandmap.height(); y++) {
-			for (int32 x = 0; x < getData().sandmap.width(); x++) {
+				//クリック領域の定義
 				const RectF rect{ (Point{ (x * m_size), (y * m_size)} + Offset), m_size };
-				if (rect.leftClicked())
+
+				//アイテムが選択されるとき
+				if (isChoiseitem)
 				{
-					getData().sandmap[y][x]++;
+					//はみ出さない上限値
+					m_x = Min(x, m_width - nowitem.lenth);
+					m_y = Min(y, m_width - nowitem.lenth);
+					//スコップがマップの範囲外になったときに、参照をずらす
+					
+					const RectF scooprect{ (Point{Min(x,m_width - nowitem.lenth)*m_size,Min(y,m_height - nowitem.lenth)*m_size}+Offset),m_size };
+
+
+					//掘る範囲が決定されたとき
+					if (rect.leftClicked())
+					{
+						//配列の値を変える
+						//二重ループの中に二重ループするのやめたい
+						for (int32 i = m_y; i < m_y + nowitem.lenth; i++) {
+							for (int32 j = m_x; j < m_x + nowitem.lenth; j++) {
+
+								
+								getData().sandmap[i][j]++;
+								m_score += 10 * Pow(getData().sandmap[i][j], 2);
+							}
+						}
+						m_turn--;
+						items[nowindex] = Item(scoops.choice(), items[nowindex].rect, nowindex);
+					}
+
+
 				}
+
 			}
 		}
-		//掘る場所が決まったら
-		//if()
+
+		//turn終了したらランキングへ
+		if(m_turn<=0)
+		{
+			// ランキング画面へ
+			changeScene(State::Ranking);
+
+			getData().lastGameScore = m_score;
+
+		}
+
 
 	}
 
@@ -185,16 +217,19 @@ public:
 	void draw() const override
 	{
 		//砂マップ
-		for (int32 y = 0; y < getData().sandmap.height(); y++) {
-			for (int32 x = 0; x < getData().sandmap.width(); x++) {
+		for (int32 y = 0; y < m_height; y++) {
+			for (int32 x = 0; x < m_width; x++) {
 				const RectF rect{ (Point{ (x * m_size), (y * m_size)} + Offset), m_size };
 				const ColorF color{ (3 - getData().sandmap[y][x]) / 3.0 };
+				rect.stretched(-1).draw(color);
 				if ((isChoiseitem==true) && rect.mouseOver())
 				{
 					rect.drawFrame(8, 0);
-					RectF{ Clamp<size_t>(rect.x, 80, LastOffset.x) ,Clamp(int32(rect.y), Offset.y, LastOffset.y), ((nowitem.lenth) * (m_size)) }.stretched(-1).draw(color);
+					
+					const RectF scooprect{ (Point{Min(x,m_width - nowitem.lenth)*m_size,Min(y,m_height - nowitem.lenth)*m_size}+Offset),m_size*nowitem.lenth };
+					scooprect.draw(color);
+
 				}
-				rect.stretched(-1).draw(color);
 
 			}
 		}
@@ -227,9 +262,18 @@ public:
 			}
 		}
 
+		//残りターン数の表示
+		FontAsset(U"Menu")(U"日暮れまであと\n{}ターン"_fmt(m_turn)).drawAt(30, Vec2{1000,80});
+
+		//スコアの表示
+		FontAsset(U"Menu")(U"現在のスコア　{}"_fmt(m_score)).drawAt(30, Vec2{1000,80});
+		
 	}
 
 private:
+
+	//フラグ管理
+	bool flag = false;
 
 	//sandmapサイズ
 	constexpr static int32 m_width = 9;
@@ -240,10 +284,10 @@ private:
 
 	constexpr static Rect LastOffset{ 600, 600 };
 
+	//スコップが範囲外を選択しないように、みせかけのx,yを設定する
+	int32 m_x = 100;
+	int32 m_y = 100;
 
-
-	//土の色
-	Color s_color;
 
 	//土の種類
 
@@ -275,6 +319,8 @@ private:
 
 	//今選んでるアイテム
 	Scoop nowitem;
+	//今のインデックス　これ絶対ダメなやつ
+	int32 nowindex;
 
 	//アイテムを選んでいるか
 	bool isChoiseitem=false;
@@ -285,6 +331,7 @@ private:
 	{
 		Scoop scoop;
 		RectF rect;
+		int32 index;
 	};
 
 	//アイテムの配列
@@ -299,6 +346,11 @@ private:
 	const RectF discription{ Arg::center(800,600),100 };
 
 
+	//ターン数
+	int32 m_turn=25;
+
+	//ゲームのスコア
+	int32 m_score = 0;
 };
 
 class Game : public App::Scene
